@@ -29,6 +29,7 @@ def calSpec(wavelength, spotList, specBck, specSpot, omega, radius, inclination)
                                  vGrid[i, j],
                                  wavelength)
             else:
+                print('Spotty grid')
                 spec_i = projAreaGrid[i, j] / totalArea * \
                     dopplerShift(specSpot['wavelength'],
                                  specSpot['flux'],
@@ -51,12 +52,19 @@ if __name__ == '__main__':
     }
     omega = 1.7e-4  # 10 hr rotation period, a fast rotating star
     R = 6.957e5  # use solar radius in km
-    spotList = [(np.pi / 4, -np.pi / 3, 10 * np.pi / 180)]
+    spotList = [(0, -np.pi / 3, 30 * np.pi / 180)]
     spec = calSpec(wl1, spotList, spec1, spec2, omega, R, 0)
     spec0 = calSpec(wl1, [], spec1, spec2, omega, R, 0)
     plt.close('all')
     plt.plot(wl1, spec)
     plt.plot(wl1, spec0)
+    plt.xlabel('Wavelength [$\AA$]')
+    plt.ylabel('flux')
+    xcorr = np.correlate(spec, spec0, 'same')
+    dV = (wl1 - wl1.mean()) / wl1.mean() * 3e5
+    plt.figure()
+    plt.plot(dV, xcorr)
+    plt.xlabel('$\Delta V [km]$')
     plt.show()
 
 
