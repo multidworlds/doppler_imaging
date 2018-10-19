@@ -6,13 +6,14 @@ Caculate the projected area size radial velocity for a given pair of latitute an
 import numpy as np
 
 # global parameters to define the number of samples
-N_LAT = 100
-N_LON = 100
+N_LAT = 50
+N_LON = 50
 D_LAT = np.pi / N_LAT
-D_LON = 2 * np.pi / N_LON
+D_LON = np.pi / N_LON
 LAT_LIST = np.linspace(-np.pi / 2, np.pi / 2, N_LAT)
-LON_LIST = np.linspace(0, 2 * np.pi, N_LON)
-LAT_GRID, LON_GRID = np.meshgrid(LAT_LIST, LON_LIST)
+LON_LIST = np.linspace(-np.pi / 2, np.pi / 2, N_LON)
+LAT_GRID, LON_GRID = np.meshgrid(LAT_LIST, LON_LIST,
+                                 indexing='ij')
 
 
 def grid_proj(latitude, longitude, d_lat, d_long, omega, radius, incl):
@@ -31,7 +32,7 @@ def grid_proj(latitude, longitude, d_lat, d_long, omega, radius, incl):
     cos_lat = np.cos(latitude)
     cos_long = np.cos(longitude)
     # projected radial veloctiy
-    Vr = omega * radius * cos_lat * cos_long
+    Vr = omega * radius * cos_lat * np.sin(longitude)
     # actual area size
     dS = radius * radius * cos_lat * d_lat * d_long
     # projected area size
@@ -42,11 +43,11 @@ def grid_proj(latitude, longitude, d_lat, d_long, omega, radius, incl):
 def grid_map(omega, radius, incl):
     """return a grid for latitude and longitude
     """
-    areaGrid = np.mgrid[N_LAT, N_LON]
-    projectedAreaGrid = np.mgrid[N_LAT, N_LON]
-    velocityGrid = np.mgrid[N_LAT, N_LON]
-    for i, lat_i in enumerate(N_LAT):
-        for j, lon_i in enumerate(N_LON):
+    areaGrid = np.zeros((N_LAT, N_LON))
+    projectedAreaGrid = np.zeros((N_LAT, N_LON))
+    velocityGrid = np.zeros((N_LAT, N_LON))
+    for i, lat_i in enumerate(LAT_LIST):
+        for j, lon_i in enumerate(LON_LIST):
             dS, dA, Vr = grid_proj(lat_i, lon_i, D_LAT, D_LON,
                                    omega, radius, incl)
             areaGrid[i, j] = dS
@@ -62,7 +63,7 @@ def spot_map(spotList):
     spotList should be a list of tuples showing the lon, lat
     and size of the spot
     """
-    spotGrid = np.mgrid[N_LAT, N_LON]
+    spotGrid = np.zeros((N_LAT, N_LON), dtype=int)
     for spot in spotList:
         distGrid = np.sqrt((LAT_GRID - spot[0])**2 +
                     (LON_GRID - spot[1])**2)
